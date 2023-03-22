@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "ADS1X15.h"
 #include <Joystick.h>
-#include <AccelStepper.h>
 #include <TaskSchedulerDeclarations.h>
 #include <TaskScheduler.h>
+#include <Bounce2.h>
 
 Scheduler ts;
 
@@ -17,17 +17,14 @@ Joystick_ Joystick(JOYSTICK_DEFAULT_REPORT_ID,
   false, false // brake, steering
   );
 
+Bounce bounce = Bounce(); // Instantiate a Bounce object  
+
 
 #define ADS_PIN 0
 #define ADC_LOW_VALUE 200
 #define ADC_HIGH_VALUE 25000
 
-#define PIN_STEPPER_EN 9
-#define PIN_STEPPER_DIR 5
-#define PIN_STEPPER_PULSE 6
-#define PIN_TRIM_RELEASE 7
-
-AccelStepper stepper = AccelStepper(1, PIN_STEPPER_PULSE, PIN_STEPPER_DIR);
+#define PIN_TRIM_RELEASE 4
 
 void adcCallback() {
   if (ADS.isReady())
@@ -43,17 +40,15 @@ void adcCallback() {
 Task adcTask( 200 * TASK_MILLISECOND, TASK_FOREVER, &adcCallback, &ts, true);
 
 
-int trimReleaseValue = 1;
+int eventNo = 1;
 
 void setup()
 {
-  stepper.setEnablePin(PIN_STEPPER_EN);
-  stepper.setMaxSpeed(1000);
-  stepper.setAcceleration(500);
-  stepper.setPinsInverted(false, false, true);
-  pinMode(PIN_TRIM_RELEASE, INPUT_PULLUP);
+  bounce.attach(PIN_TRIM_RELEASE,INPUT_PULLUP); // Attach the debouncer to a pin with INPUT_PULLUP mode
+  bounce.interval(25); // Use a debounce interval of 25 milliseconds
   // pinMode(PIN_STEPPER_PULSE, OUTPUT);
   // digitalWrite(PIN_STEPPER_DIR, 0);
+  Serial1.begin(9600);
   Serial.begin(115200);
   ADS.begin();
   if (ADS.isConnected())
@@ -74,15 +69,16 @@ void setup()
 void loop()
 {
   ts.execute();
-  stepper.run();
-  int currentTr = digitalRead(PIN_TRIM_RELEASE);
-  if (currentTr != trimReleaseValue) {
-    trimReleaseValue = currentTr;
-    if (currentTr) {
-      stepper.enableOutputs();
+  bounce.update(); // Update the Bounce instance
+  if (bounce.changed()) {
+    Serial.print("Event #");
+    Serial.print(eventNo++);
+    Serial.print(": ");
+    if (bounce.rose()) {
+      Serial1.println("<1ON>");
       Serial.println("Trim lock activated");
     } else {
-      stepper.disableOutputs();
+      Serial1.println("<1OFF>");
       Serial.println("Trim lock released");
     }
   }
