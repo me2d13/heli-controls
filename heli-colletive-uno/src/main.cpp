@@ -61,11 +61,6 @@ void loop() {
     }
   }
   digitalWrite(LED_BUILTIN, HIGH);  // turn the LED on (HIGH is the voltage level)
-  //stepper.moveTo(800);
-  //stepper.runToPosition();
-  delay(100);                      // wait for a second
+  delay(10);
   digitalWrite(LED_BUILTIN, LOW);   // turn the LED off by making the voltage LOW
-  //stepper.moveTo(0);
-  //stepper.runToPosition();
-  delay(1000);         
 }
