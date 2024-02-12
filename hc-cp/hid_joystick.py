@@ -119,5 +119,5 @@ class Joystick:
     @staticmethod
     def _validate_joystick_value(value):
         if not 0 <= value <= 4095:
-            raise ValueError("Joystick value must be in range 0 to 4095")
+            raise ValueError("Joystick value must be in range 0 to 4095, tried " + str(value))
         return value
