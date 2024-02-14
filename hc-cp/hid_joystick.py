@@ -6,13 +6,15 @@ from adafruit_hid import find_device
 
 class Joystick:
 
-    def __init__(self, devices):
+    def __init__(self, devices, auto_send = True):
         self._joy_device = find_device(devices, usage_page=0x1, usage=0x04)
-        self._report = bytearray(10)
+        self._report = bytearray(12)
 
         # Remember the last report as well, so we can avoid sending
         # duplicate reports.
-        self._last_report = bytearray(10)
+        self._last_report = bytearray(12)
+
+        self._auto_send = auto_send
 
         # Store settings separately before putting into report. Saves code
         # especially for buttons.
@@ -34,19 +36,19 @@ class Joystick:
         """Press and hold the given buttons."""
         for button in buttons:
             self._buttons_state |= 1 << self._validate_button_number(button) - 1
-        self._send()
+        if self._auto_send: self._send()
 
     def release_buttons(self, *buttons):
         """Release the given buttons."""
         for button in buttons:
             self._buttons_state &= ~(1 << self._validate_button_number(button) - 1)
-        self._send()
+        if self._auto_send: self._send()
 
     def release_all_buttons(self):
         """Release all the buttons."""
 
         self._buttons_state = 0
-        self._send()
+        if self._auto_send: self._send()
 
     def click_buttons(self, *buttons):
         """Press and release the given buttons."""
@@ -79,7 +81,7 @@ class Joystick:
             self._joy_z = self._validate_joystick_value(z)
         if r_x is not None:
             self._joy_r_x = self._validate_joystick_value(r_x)
-        self._send()
+        if self._auto_send: self._send()
 
     def reset_all(self):
         """Release all buttons and set joysticks to zero."""
@@ -88,14 +90,14 @@ class Joystick:
         self._joy_y = 0
         self._joy_z = 0
         self._joy_r_x = 0
-        self._send(always=True)
+        if self._auto_send: self._send(always=True)
 
     def _send(self, always=False):
         """Send a report with all the existing settings.
         If ``always`` is ``False`` (the default), send only if there have been changes.
         """
         struct.pack_into(
-            "<HHHHH",
+            "<IHHHH",
             self._report,
             0,
             self._buttons_state,
@@ -112,8 +114,8 @@ class Joystick:
 
     @staticmethod
     def _validate_button_number(button):
-        if not 1 <= button <= 16:
-            raise ValueError("Button number must in range 1 to 16")
+        if not 1 <= button <= 32:
+            raise ValueError("Button number must in range 1 to 32")
         return button
 
     @staticmethod

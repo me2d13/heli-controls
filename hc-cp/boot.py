@@ -10,11 +10,11 @@ HELI_REPORT_DESCRIPTOR = bytes((
     0x85, 0x04,                    #   REPORT_ID (4)
     0x05, 0x09,                    #   USAGE_PAGE (Button)
     0x19, 0x01,                    #   USAGE_MINIMUM (Button 1)
-    0x29, 0x10,                    #   USAGE_MAXIMUM (Button 16)
+    0x29, 0x20,                    #   USAGE_MAXIMUM (Button 32)
     0x15, 0x00,                    #   LOGICAL_MINIMUM (0)
     0x25, 0x01,                    #   LOGICAL_MAXIMUM (1)
     0x75, 0x01,                    #   REPORT_SIZE (1)
-    0x95, 0x10,                    #   REPORT_COUNT (16)
+    0x95, 0x20,                    #   REPORT_COUNT (32)
     0x81, 0x02,                    #   INPUT (Data,Var,Abs)
     0x05, 0x01,                    #   USAGE_PAGE (Generic Desktop)
     0x09, 0x30,                    #   USAGE (X)
@@ -64,7 +64,7 @@ heli = usb_hid.Device(
     usage_page=0x01,           # Generic Desktop Control
     usage=0x04,                # Joystick
     report_ids=(4,),           # Descriptor uses report ID 4.
-    in_report_lengths=(10,),    # This joy sends 10 bytes in its report.
+    in_report_lengths=(12,),    # This joy sends 12 bytes in its report.
     out_report_lengths=(0,),   # It does not receive any reports.
 )
 

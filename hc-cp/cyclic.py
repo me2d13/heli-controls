@@ -11,6 +11,8 @@ joy_x_max = 38000
 joy_y_min = 15000
 joy_y_max = 43000
 
+joy_total_buttons = 8
+
 #joy_x_max = 65535
 #joy_y_max = 65535
 
@@ -55,6 +57,8 @@ last_x = 32000
 last_y = 32000
 last_ftr = True
 
+last_buttons = [True for _ in range(0, joy_total_buttons)]
+
 def describe():
     print("Cyclic state: X", axis_x.value,", Y", axis_y.value, ", ftr", pin_ftr.value)
 
@@ -80,3 +84,10 @@ def loop(joy: Joystick):
             pin_x_en.value = True
             pin_y_en.value = True
 
+def buttons(joy: Joystick, button_channel):
+    global last_buttons
+    cur_button = pin_buttons.value
+    if button_channel < joy_total_buttons and cur_button != last_buttons[button_channel]:
+        last_buttons[button_channel] = cur_button
+        joy_button_number = 3 + button_channel
+        joy.release_buttons(joy_button_number) if cur_button else joy.press_buttons(joy_button_number)
